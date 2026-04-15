@@ -36,7 +36,11 @@ This installs `numpy` and `matplotlib`, which are required by the benchmark scri
 ## RUNNING THE BENCHMARK
 
 ```bash
-py experiments/run_benchmarks.py
+cd experiments
+```
+
+```bash
+python run_benchmarks.py
 ```
 
 This will:
