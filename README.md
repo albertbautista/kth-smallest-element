@@ -28,7 +28,7 @@ https://git-scm.com/install/
 From the root of the cloned repository, run:
 
 ```bash
-py -m pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 This installs `numpy` and `matplotlib`, which are required by the benchmark script.
