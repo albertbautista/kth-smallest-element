@@ -33,6 +33,20 @@ pip install -r requirements.txt
 
 This installs `numpy` and `matplotlib`, which are required by the benchmark script.
 
+## RUNNING THE DRIVER
+This is a driver program used to validate the correctness of the baseline and Quickselect algorithms on a predefined sample input. <br /><br />
+From the project root run:
+```
+cd  src
+```
+
+```
+python main.py
+```
+This will:
+- Run both the baseline (merge sort) and Quickselect algorithms using the same hardcoded sample input
+- Print the k-th smallest element returned by each algorithm
+
 ## RUNNING THE BENCHMARK
 
 ```bash
