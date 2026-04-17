@@ -33,6 +33,20 @@ def kthSmallestElement(arr, left,right,kth):
 
   print("Error: Invalid Index")
 
-     
+#This method essentially sorts a list by shifting everything around the pivot
+
+#input: the method requires an array along with its starting and ending indexes
+#output: ends up returning the position of the pivot in relation to how the list is ordered
+
 def partition(arr,left,right):
-   return null
+  pivot = arr[right]
+  i = left
+
+  for x in range(left,right):
+    if(arr[j]<=pivot):
+        arr[i], arr[j] = arr[j], arr[i]
+        i+=1
+
+  arr[i], arr[r] = arr[r], arr[i]
+   
+  return i
