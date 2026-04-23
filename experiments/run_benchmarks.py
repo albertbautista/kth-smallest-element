@@ -30,7 +30,7 @@ RUNTIME_TXT = os.path.join(RESULTS_DIR, 'runtime.txt')
 # ---------------------------------------------------------------------------
 C_MS  = '#0077BB'   # blue   — mergesort
 C_QS  = '#EE7733'   # orange — quickselect
-C_REF = '#AAAAAA'   # gray   — reference curves
+C_REF = '#9B59B6'   # purple — reference curves
 
 STYLE = {
     'data_lw':   2.5,
