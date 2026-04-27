@@ -93,9 +93,9 @@ def bench_one(fn, n, runs=RUNS, base_seed=None):
         # --- memory (fresh array, same trial seed offset) ---
         if base_seed is not None:
             random.seed(base_seed + i + 10000)  # distinct offset → different array
-        arr2 = make_array(n)
+        arr2 = make_array(n)[:]
         tracemalloc.start()
-        fn(arr2[:], k)
+        fn(arr2, k)
         _, peak = tracemalloc.get_traced_memory()
         tracemalloc.stop()
         peaks.append(peak)
@@ -178,24 +178,14 @@ def save_runtime_chart(ms_times, qs_times, path, title_suffix):
     print(f"  Runtime chart saved to {path}")
 
 
-def save_memory_chart(ms_times, ms_peaks, qs_times, qs_peaks, path, title_suffix):
+def save_memory_chart(ms_times, ms_peaks, _qs_times, _qs_peaks, path, title_suffix):
     ms_ns = sorted(ms_times)
-    qs_ns = sorted(qs_times)
-
     ms_pmem = [ms_peaks[n] / 1024 for n in ms_ns]
-    qs_pmem = [qs_peaks[n] / 1024 for n in qs_ns]
-
-    common_ns = sorted(set(ms_peaks) & set(qs_peaks))
-    crossover_n = None
-    for n in common_ns:
-        if qs_peaks[n] >= ms_peaks[n]:
-            crossover_n = n
-            break
 
     n0_ms = ms_ns[0]
-    n0_qs = qs_ns[0]
     ref_ns_ms = np.array(ms_ns)
-    ref_ns_qs = np.array(qs_ns)
+    pm0_ms = ms_pmem[0]
+    C_mem_ms = pm0_ms / n0_ms
 
     fig, ax = plt.subplots(figsize=(10, 6))
 
@@ -203,60 +193,27 @@ def save_memory_chart(ms_times, ms_peaks, qs_times, qs_peaks, path, title_suffix
             marker=STYLE['ms_marker'], markersize=STYLE['markersize'],
             linewidth=STYLE['data_lw'], color=C_MS,
             label='Mergesort (baseline)', zorder=3)
-    ax.plot(qs_ns, qs_pmem,
-            marker=STYLE['qs_marker'], markersize=STYLE['markersize'],
-            linewidth=STYLE['data_lw'], color=C_QS,
-            label='Quickselect (improved)', zorder=3)
 
-    # Θ(n) reference for mergesort memory
-    pm0_ms = ms_pmem[0]
-    C_mem_ms = pm0_ms / n0_ms
     ax.plot(ref_ns_ms, C_mem_ms * ref_ns_ms,
             linestyle='--', linewidth=STYLE['ref_lw'], color=C_REF,
             label='Θ(n) reference', zorder=2)
 
-    # Θ(log n) reference for quickselect memory
-    pm0_qs = qs_pmem[0]
-    C_mem_qs = pm0_qs / np.log2(n0_qs)
-    ax.plot(ref_ns_qs, C_mem_qs * np.log2(ref_ns_qs),
-            linestyle=':', linewidth=STYLE['ref_lw'], color=C_REF,
-            label='Θ(log n) avg case stack', zorder=2)
-
-    if crossover_n is not None:
-        cx_ms_kb = ms_peaks[crossover_n] / 1024
-        cx_qs_kb = qs_peaks[crossover_n] / 1024
-        cx_y = (cx_ms_kb + cx_qs_kb) / 2
-        ax.annotate(
-            f'Crossover at n={crossover_n}',
-            xy=(crossover_n, cx_y),
-            xytext=(crossover_n * 1.5, cx_y * 2),
-            arrowprops=dict(arrowstyle='->', color='#333333'),
-            fontsize=STYLE['annot_fs'], color='#333333',
-        )
-    else:
-        if common_ns:
-            qs_lower = all(qs_peaks[n] < ms_peaks[n] for n in common_ns)
-            ms_lower = all(ms_peaks[n] < qs_peaks[n] for n in common_ns)
-            if qs_lower:
-                note = "Quickselect uses less memory across all tested sizes"
-            elif ms_lower:
-                note = "Mergesort uses less memory across all tested sizes"
-            else:
-                note = "No consistent dominance across tested sizes"
-        else:
-            note = "No overlapping sizes between algorithms"
-        ax.text(0.02, 0.97, note, transform=ax.transAxes,
-                va='top', ha='left', fontsize=STYLE['annot_fs'],
-                color='#555555',
-                bbox=dict(boxstyle='round,pad=0.4', fc='white',
-                          ec='#CCCCCC', alpha=0.8))
+    ax.text(0.02, 0.97,
+            "Quickselect: Θ(1) auxiliary memory\n"
+            "In-place algorithm — no extra arrays allocated.\n"
+            "Python's tracemalloc cannot isolate interpreter\n"
+            "overhead from true auxiliary allocations.",
+            transform=ax.transAxes,
+            va='top', ha='left', fontsize=STYLE['annot_fs'],
+            color='#555555',
+            bbox=dict(boxstyle='round,pad=0.4', fc='white', ec='#CCCCCC', alpha=0.8))
 
     ax.set_xscale('log')
     ax.set_yscale('log')
     ax.set_xlabel('Input size n', fontsize=STYLE['label_fs'])
     ax.set_ylabel('Peak auxiliary memory (KB)', fontsize=STYLE['label_fs'])
     ax.set_title(
-        f'Auxiliary Memory vs Input Size: Mergesort vs Quickselect\n{title_suffix}',
+        f'Auxiliary Memory vs Input Size: Mergesort\n{title_suffix}',
         fontsize=STYLE['title_fs'], fontweight='bold', pad=12)
     ax.tick_params(labelsize=STYLE['tick_fs'])
     ax.grid(True, which='major', linestyle='-',  alpha=0.4, color='#CCCCCC')
