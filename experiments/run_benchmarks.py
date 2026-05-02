@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 from baseline import kth_smallest as mergesort_kth
-from quickselect import kth_smallest as quickselect_kth
+from quickselect import quickselect as quickselect_kth
 
 # ---------------------------------------------------------------------------
 # Configuration
